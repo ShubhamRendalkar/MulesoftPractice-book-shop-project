@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_9d337c78_05c9_4795_a923_c4c1c880a2be_Input_Variables_transactionid = Any
+

@@ -1,0 +1,80 @@
+#%RAML 1.0
+title: BookAPI
+baseUri: https://anypoint.mulesoft.com/mocking/api/v1/links/41ac4140-db0e-4b84-a33e-4c5bba671b0d
+description: This is shop of book and notebook API 
+mediaType:
+  - application/json
+version: 1.0.0
+protocols:
+  - HTTP
+traits:
+   transactionid-header: !include /common/header-trait.raml  
+types:
+    get-200-type: !include /book/type/get-200-dataType.raml   
+    get-400-type: !include /book/type/get-400-dataType.raml
+    get-note-200-type: !include /notebook/type/get-200-dataType.raml   
+    get-note-400-type: !include /notebook/type/get-400-dataType.raml
+  
+/{companyname}:
+  /book:
+    get:
+      displayName: Get a book object
+      is:
+        - transactionid-header          
+      queryParameters:
+        bookid:
+          type: number
+          required: false
+          example: 1
+        bookversion:
+          type: string
+          required: false
+          example: "v.1"         
+      responses:
+        "200":
+          body:
+            application/json:
+              type: get-200-type  
+              examples: !include /book/example/200-ex.raml
+                                                  
+        400:
+          body:
+            application/json:
+              type: get-400-type                  
+              examples: !include /book/example/400-ex.raml
+
+  /notebook:
+    get:
+      displayName: Get a notebook object
+      is:
+        - transactionid-header          
+      queryParameters:
+        notebookid:
+          type: number
+          required: true
+          example: 1
+        notebookversion:
+          type: string
+          required: false
+          example: "v.1"         
+      responses:
+        "200":
+          body:
+            application/json:
+              type: get-note-200-type  
+              examples: !include /notebook/example/200-ex.raml
+                                                  
+        400:
+          body:
+            application/json:
+              type: get-note-400-type                  
+              examples: !include /notebook/example/400-ex.raml            
+              
+                                  
+                      
+
+
+                  
+
+          
+

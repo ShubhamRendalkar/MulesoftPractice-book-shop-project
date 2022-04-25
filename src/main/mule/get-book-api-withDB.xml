@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="a2ce08d0-25b7-4031-8967-087fbc8cfba3" >
+		<db:oracle-connection host="localhost" user="SYSTEM" password="system" instance="xe" />
+	</db:config>
+	<os:object-store name="Object_store1" doc:name="Object store" doc:id="634b5344-6ae1-481e-984d-3353c16e4905" maxEntries="1000" entryTtl="15" entryTtlUnit="MINUTES" expirationInterval="10" />
+	<ee:object-store-caching-strategy name="Caching_Strategy" doc:name="Caching Strategy" doc:id="c9ddb2a3-3d22-450a-aac4-c9dde51aadcb" objectStore="Object_store1" keyGenerationExpression='#[vars.companyname ++ "book" ++ vars.bookid]'/>
+	<sub-flow name="dbSub_Flow" doc:id="9d337c78-05c9-4795-a923-c4c1c880a2be" >
+		<logger level="INFO" doc:name="Copy_of_Logger" doc:id="d155997d-9050-4bb5-804e-8ced8c77c653" message="in DB. queryPara: #[vars.BookID]" />
+		<db:select doc:id="11957dea-abd5-4f9b-8bc2-f0cf96c9b113" config-ref="Database_Config">
+			<db:sql ><![CDATA[select * from book_info where bookid = :bookid]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+bookid: vars.bookid
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Copy_of_Transform Message" doc:id="29d3a711-40c3-42cf-a791-8c006681cc4c" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map (item, index) -> 
+{
+BOOKID: item.BOOKID,
+BOOKVERSION: item.BOOKVERSION,
+BOOKNAME: item.BOOKNAME,
+BOOKAUTHNAME:
+    {
+        AUTHFNAME:item.AUTHFNAME,
+        AUTHLNAME:item.AUTHLNAME
+
+    }
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Copy_of_Logger" doc:id="0747d137-1413-4274-a6d2-5a4f53a546e2" message="end of DB. #[payload]" />
+	</sub-flow>
+	<sub-flow name="get-book-api-withDB" doc:id="dba75c16-6d92-48e6-911e-141f668ec414" >
+		<choice doc:name="Copy_of_Choice" doc:id="ac2c091d-7699-478c-911c-92e010fe6b5e" >
+			<when expression='#[vars.companyname == "shop1"]' >
+				<logger level="INFO" doc:name="Copy_of_Logger" doc:id="ee5cf702-cba9-4bb0-8fc0-6d1151fde888" message="in get-book-api shp1-book" />
+				<ee:cache doc:name="Cache" doc:id="4f0b8699-caff-4449-b9f1-aa96159feacf" cachingStrategy-ref="Caching_Strategy">
+					<flow-ref doc:name="Flow Reference" doc:id="74602551-000d-4bfe-ad72-379ca27aed9c" name="dbSub_Flow" />
+				</ee:cache>
+				<logger level="INFO" doc:name="Copy_of_Logger" doc:id="080b2244-265c-4b98-bc18-06e9b914d739" message="end shop1-book.   #[payload]" />
+			</when>
+			<when expression='#[vars.companyname == "shop2"]'>
+				<logger level="INFO" doc:name="Copy_of_Copy_of_Logger" doc:id="2a48e73a-24c3-4700-877a-fe1b24a49a06" message="in get-book-api shop2-book" />
+				<flow-ref doc:name="Copy_of_Flow Reference" doc:id="3f4270bd-e2f2-4f49-b20b-d89ef7b9b4db" name="dbSub_Flow" />
+				<logger level="INFO" doc:name="Copy_of_Copy_of_Logger" doc:id="f85ed0ca-a17f-4eac-9349-70feb03cc03a" message="end shop2-book.   #[payload]" />
+			</when>
+			<otherwise >
+				<scatter-gather doc:name="Scatter-Gather" doc:id="4a4fdc55-0fd5-468b-9e83-749d8a4bcce2" >
+					<route >
+						<flow-ref doc:name="Flow Reference" doc:id="dc6b564b-b764-47d8-ba39-df03051fa385" name="dbSub_Flow" target="shop1data"/>
+						<logger level="INFO" doc:name="Logger" doc:id="70768314-45a3-4041-a268-aeaa04938b03" message="#[payload]"/>
+					</route>
+					<route >
+						<flow-ref doc:name="Flow Reference" doc:id="5b7a6408-92ed-450d-8601-2337372e839d" name="dbSub_Flow2" target="shop2data"/>
+						<logger level="INFO" doc:name="Logger" doc:id="e6220b8b-20ee-40ec-b8a4-4b44d2890d77" message="#[payload]"/>
+					</route>
+				</scatter-gather>
+				<ee:transform doc:name="Transform Message" doc:id="87233113-76ac-44fa-b218-3a67737eef58" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var c=[vars.shop1data,vars.shop2data]
+---
+flatten(c)]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+	</sub-flow>
+	<sub-flow name="dbSub_Flow2" doc:id="2418a611-f6a3-4270-b345-5d1a35e5d03c" >
+		<logger level="INFO" doc:name="Copy_of_Copy_of_Logger" doc:id="b425860b-47e9-4959-a6ad-34b782ec9794" message="in DB. queryPara: #[vars.BookID]" />
+		<db:select doc:name="Copy_of_Select" doc:id="c1d4a4f4-9c76-4b89-b25c-7432074b163a" config-ref="Database_Config" >
+			<db:sql ><![CDATA[select * from notebook_info where notebookid= :notebookid]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+notebookid: vars.notebookid
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Copy_of_Copy_of_Transform Message" doc:id="dda26e33-edcf-4ce3-9797-60481150d11f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map (item, index) -> 
+{
+NOTEBOOKID: item.NOTEBOOKID,
+SIZE: item.NSIZE
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Copy_of_Copy_of_Logger" doc:id="ada1aeb3-20a7-4e54-ac98-ebd31e889c30" message="end of DB. #[payload]" />
+	</sub-flow>
+</mule>

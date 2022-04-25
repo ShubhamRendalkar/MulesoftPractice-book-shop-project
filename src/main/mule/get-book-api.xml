@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd">
+	<http:request-config name="HTTP_Request_configuration-shop11" doc:name="HTTP Request configuration" doc:id="7645411e-b110-48a0-9614-3c8e386d3212" >
+		<http:request-connection host="localhost" port="8083" />
+	</http:request-config>
+	<sub-flow name="get-book-apiSub_Flow1" doc:id="abade1e3-6916-48e5-86ce-da8fe8e85804" >
+		<http:request method="GET" doc:name="Request" doc:id="712d88af-4268-47c8-b0de-26f1701ad4f7" config-ref="HTTP_Request_configuration-shop11" path="/api/${http.requester.shop1.bookpath}" >
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"transactionid" : vars.transactionid
+}]]]></http:headers>
+		</http:request>
+		<logger level="INFO" doc:name="Logger" doc:id="9c4a4118-10af-4fcd-a927-46901c8400c8" />
+	</sub-flow>
+	<sub-flow name="get-book-apiSub_Flow2" doc:id="a935005f-49e5-4b48-87c8-11bd9eca5ac3">
+		<http:request method="GET" doc:name="Request" doc:id="82fed2dd-71bb-4703-b184-5f778e5d924d" config-ref="HTTP_Request_configuration-shop11" path="/api/${http.requester.shop1.bookpath}">
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	"transactionid" : vars.transactionid
+}]]]></http:headers>
+		</http:request>
+		<logger level="INFO" doc:name="Logger" doc:id="895452e4-ab28-4bac-8b45-1eac2d7875d1" />
+	</sub-flow>
+	<sub-flow name="get-book-apiSub_Flow" doc:id="f532259b-7442-493b-a082-3ee5e50403d1" >
+		<choice doc:name="Choice" doc:id="8b4a467b-f62f-4bbf-aa90-e7a8f853a5c6" >
+			<when expression='#[vars.companyname == "shop1"]'>
+				<logger level="INFO" doc:name="Logger" doc:id="23b994b7-9579-4ff8-abc1-c39e594941fc" message="in get-book-api shp1-book"/>
+				<flow-ref doc:name="Flow Reference" doc:id="da5257bb-03aa-4ee0-b77d-a888ea269b9d" name="get-book-apiSub_Flow1"/>
+				<logger level="INFO" doc:name="Logger" doc:id="cb374b85-3769-4499-b14c-6ffdab8a1c61" message="end sop1-book.   #[payload]"/>
+			</when>
+			<when expression='#[vars.companyname == "shop2"]'>
+				<flow-ref doc:name="Flow Reference" doc:id="c9627b10-b9ed-4e29-84f2-79a4b9d688fa" name="get-book-apiSub_Flow2" />
+				<logger level="INFO" doc:name="Logger" doc:id="5bd39e5e-b794-46c8-91b3-cab29da5f216" message="end sop2-book.   #[payload]" />
+			</when>
+			<otherwise >
+				<scatter-gather doc:name="Scatter-Gather" doc:id="db84b5d1-ee54-401d-acdb-f4a05cfce741" >
+					<route >
+						<flow-ref doc:name="Flow Reference" doc:id="a7871b39-ed37-4536-8ffe-20c3b80f4239" name="get-book-apiSub_Flow1" />
+					</route>
+					<route >
+						<flow-ref doc:name="Flow Reference" doc:id="676dd689-fb96-459b-b2e1-740de98a8740" name="get-book-apiSub_Flow2" />
+					</route>
+				</scatter-gather>
+				<logger level="INFO" doc:name="Logger" doc:id="e5cb095a-79aa-40ea-871f-bc6a396c803d" message="#[&quot;to combine paylaod from 2 flows use below datawave&quot; ++ (payload.'0'.payload) ++ (payload.'1'.payload)]"/>
+				<set-payload value="#[(payload.'0'.payload default []) ++ (payload.'1'.payload default [])]" doc:name="Set Payload" doc:id="53b5976d-13fb-4372-b14a-08c3a9850fc1" />
+			</otherwise>
+		</choice>
+	</sub-flow>
+</mule>

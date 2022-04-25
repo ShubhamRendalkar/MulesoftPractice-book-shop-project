@@ -1,0 +1,23 @@
+#%RAML 1.0 DataType
+type: array
+items:
+              type: object
+              properties:
+                bookid:
+                  type: number
+                  required: true
+                  examples:
+                    {"bookid": 1}
+                bookAuthName:
+                  type: object    
+                  properties:
+                    AuthFname:
+                      type: string
+                      required: true
+                      examples:
+                        {"AuthFname": "shubham"}
+                    AuthLname:
+                      type: string
+                      required: true
+                      examples:
+                        {"AuthLname": "rendalkar"}  

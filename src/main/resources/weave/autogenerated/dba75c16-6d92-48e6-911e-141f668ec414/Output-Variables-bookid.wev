@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_dba75c16_6d92_48e6_911e_141f668ec414_Output_Variables_bookid = Any
+
