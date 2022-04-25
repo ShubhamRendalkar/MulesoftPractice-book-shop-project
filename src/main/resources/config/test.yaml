@@ -1,0 +1,19 @@
+http:
+  listner:
+    host: "0.0.0.0"
+    port: "8085"
+    
+  requester:
+    shop1:
+      host: "localhost"
+      port: "8083"
+      bookpath: "/shop1/book"  
+      notebookpath: "/shop1/notebook"
+    shop2:
+      host: "localhost"
+      port: "8084"
+      bookpath: "/shop2/book"  
+      notebookpath: "/shop2/notebook"  
+
+     
+       

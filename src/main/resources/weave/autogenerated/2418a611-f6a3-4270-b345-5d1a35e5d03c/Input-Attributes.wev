@@ -1,0 +1,26 @@
+%dw 2.0
+
+type auto_2418a611_f6a3_4270_b345_5d1a35e5d03c_Input_Attributes = {|
+  clientCertificate?: {|
+    publicKey?: {|  |}, 
+    "type"?: String, 
+    encoded?: Binary
+  |}, 
+  headers: {| transactionid: String |}, 
+  listenerPath: String, 
+  method: String, 
+  queryParams: {|
+    bookid: Number, 
+    bookversion?: String
+  |}, 
+  queryString: String, 
+  relativePath: String, 
+  remoteAddress: String, 
+  requestPath: String, 
+  requestUri: String, 
+  scheme: String, 
+  uriParams: {| companyname: String |}, 
+  version: String, 
+  localAddress: String
+|}
+

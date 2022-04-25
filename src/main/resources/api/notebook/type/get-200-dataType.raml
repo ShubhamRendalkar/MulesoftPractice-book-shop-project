@@ -1,0 +1,23 @@
+#%RAML 1.0 DataType
+type: array
+items:
+              type: object
+              properties:
+                notebookid:
+                  type: number
+                  required: true
+                  examples:
+                    {"notebookid": 1}
+                notebookparameter:
+                  type: object    
+                  properties:
+                    nsize:
+                      type: string
+                      required: true
+                      examples:
+                        {"nsize": "A4"}
+                    pages:
+                      type: string
+                      required: true
+                      examples:
+                        {"pages": "200"}  

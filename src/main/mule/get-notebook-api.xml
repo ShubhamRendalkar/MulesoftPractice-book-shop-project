@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:request-config name="HTTP_Request_configuration-shop1" doc:name="HTTP Request configuration" doc:id="01f34a6a-0095-4f15-9f22-148e58de3a2e" >
+		<http:request-connection host="${http.requester.shop1.host}" port="${http.requester.shop1.port}" />
+	</http:request-config>
+	<sub-flow name="get-notebook-apiSub_Flow" doc:id="f532259b-7442-493b-a082-3ee5e50403d1" >
+		<choice doc:name="Choice" doc:id="8b4a467b-f62f-4bbf-aa90-e7a8f853a5c6" >
+			<when expression='#[vars.companyname == "shop1"]'>
+				<logger level="INFO" doc:name="Logger" doc:id="23b994b7-9579-4ff8-abc1-c39e594941fc" message="in get-notebook-api shp1-book"/>
+				<http:request method="GET" doc:name="Request" doc:id="425a049b-d57f-42c5-ab58-75b28a242a93" config-ref="HTTP_Request_configuration-shop11" path="/api/${http.requester.shop1.notebookpath}" >
+					<http:headers ><![CDATA[#[output application/java
+---
+{
+	"transactionid" : vars.transactionid
+}]]]></http:headers>
+				</http:request>
+				<logger level="INFO" doc:name="Logger" doc:id="cb374b85-3769-4499-b14c-6ffdab8a1c61" message="end sop1-notebook.   #[payload]"/>
+			</when>
+			<when expression='#[vars.companyname == "shop2"]'>
+				<http:request method="GET" doc:name="Request" doc:id="800323dc-087f-4019-96ab-480eb82f010d" config-ref="HTTP_Request_configuration-shop11" path="/api/ ${http.requester.shop2.notebookpath}" >
+					<http:headers ><![CDATA[#[output application/java
+---
+{
+	"transactionid" : vars.transactionid
+}]]]></http:headers>
+				</http:request>
+			</when>
+		</choice>
+	</sub-flow>
+</mule>
